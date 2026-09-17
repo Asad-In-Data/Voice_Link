@@ -70,6 +70,12 @@
 
             messages.innerHTML +=
                 "<p>Received: " + event.data + "</p>";
+                if (message.type === "voice") {
+                   const speech = new SpeechSynthesisUtterance(message.data);
+                   speech.lang = "en-US";
+
+                   window.speechSynthesis.speak(speech);
+                }
         };
 
 
