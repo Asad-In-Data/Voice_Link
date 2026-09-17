@@ -22,6 +22,10 @@
 
 <div id="messages"></div>
 
+<button id="voiceButton">🎤 Speak</button>
+
+<p id="transcript"></p>
+
 
 <script>
 
@@ -34,6 +38,9 @@
     const sendButton = document.getElementById("send");
 
     const messages = document.getElementById("messages");
+
+    // const voiceButton = document.getElementById("voiceButton");
+    // const transcript = document.getElementById("transcript");
 
 
     connectButton.onclick = () => {
@@ -116,6 +123,92 @@
     messageInput.value = "";
 };
 
+const voiceButton = document.getElementById("voiceButton");
+const transcript = document.getElementById("transcript");
+
+const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
+
+if (SpeechRecognition) {
+
+    const recognition = new SpeechRecognition();
+
+    recognition.lang = "en-US";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    let isListening = false;
+
+
+    voiceButton.onclick = () => {
+
+        if (isListening) {
+            return;
+        }
+
+        isListening = true;
+
+        voiceButton.disabled = true;
+        voiceButton.textContent = "🎤 Listening...";
+
+        try {
+
+            recognition.start();
+
+        } catch (error) {
+
+            console.log("Recognition start error:", error);
+
+            isListening = false;
+            voiceButton.disabled = false;
+            voiceButton.textContent = "🎤 Speak";
+        }
+    };
+
+
+    recognition.onresult = (event) => {
+    const text = event.results[0][0].transcript;
+
+    transcript.textContent = "You said: " + text;
+    messageInput.value = text;
+
+    const data = {
+        from: clientIdInput.value,
+        to: recipientInput.value,
+        type: "voice",
+        data: text
+    };
+
+    socket.send(JSON.stringify(data));
+};
+
+
+    recognition.onerror = (event) => {
+
+        console.log(
+            "Speech recognition error:",
+            event.error
+        );
+    };
+
+
+    recognition.onend = () => {
+
+        isListening = false;
+
+        voiceButton.disabled = false;
+        voiceButton.textContent = "🎤 Speak";
+    };
+
+}
+else {
+
+    voiceButton.disabled = true;
+
+    voiceButton.textContent =
+        "Speech recognition not supported";
+}
 </script>
 
 
