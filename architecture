@@ -13,3 +13,15 @@
              └──────► SERVER ────────┘
                                       │
                                   "Hello"
+
+                                  ---- Improved to 
+                 ┌───────────────────┐
+                 │      SERVER       │
+                 │                   │
+                 │ ASAD → WebSocket  │
+                 │ LEO  → WebSocket  │
+                 └───────┬───────────┘
+                         │
+             ┌───────────┴───────────┐
+             ▼                       ▼
+          📱 ASAD                  🤖 LEO

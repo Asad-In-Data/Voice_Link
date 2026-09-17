@@ -6,51 +6,94 @@
 
 <body>
 
-    <h1>VoiceLink</h1>
+<h1>VoiceLink</h1>
 
-    <input id="message" type="text" placeholder="Type message">
+<input id="clientId" type="text" placeholder="Your ID">
 
-    <button id="send">Send</button>
+<button id="connect">Connect</button>
 
-    <div id="messages"></div>
+<hr>
 
-    <script>
+<input id="message" type="text" placeholder="Type message">
 
-        const socket = new WebSocket("ws://127.0.0.1:8000/ws");
+<button id="send">Send</button>
 
-        const messageInput = document.getElementById("message");
-        const sendButton = document.getElementById("send");
-        const messages = document.getElementById("messages");
+<div id="messages"></div>
+
+
+<script>
+
+    let socket;
+
+    const clientIdInput = document.getElementById("clientId");
+    const connectButton = document.getElementById("connect");
+
+    const messageInput = document.getElementById("message");
+    const sendButton = document.getElementById("send");
+
+    const messages = document.getElementById("messages");
+
+
+    connectButton.onclick = () => {
+
+        const clientId = clientIdInput.value.trim();
+
+        if (clientId === "") {
+            alert("Enter your ID");
+            return;
+        }
+
+        socket = new WebSocket(
+            "ws://127.0.0.1:8000/ws/" + clientId
+        );
 
 
         socket.onopen = () => {
-            console.log("Connected to server");
+
+            console.log("Connected");
+
+            messages.innerHTML +=
+                "<p>Connected as: " + clientId + "</p>";
         };
 
 
         socket.onmessage = (event) => {
 
-            const message = document.createElement("p");
-
-            message.textContent = "Received: " + event.data;
-
-            messages.appendChild(message);
+            messages.innerHTML +=
+                "<p>Received: " + event.data + "</p>";
         };
 
 
-        sendButton.onclick = () => {
+        socket.onclose = () => {
 
-            const message = messageInput.value;
-
-            if (message.trim() !== "") {
-
-                socket.send(message);
-
-                messageInput.value = "";
-            }
+            messages.innerHTML +=
+                "<p>Disconnected</p>";
         };
+    };
 
-    </script>
+
+    sendButton.onclick = () => {
+
+        if (!socket) {
+            alert("Connect first");
+            return;
+        }
+
+        const message = messageInput.value.trim();
+
+        if (message !== "") {
+
+            socket.send(message);
+
+            messages.innerHTML +=
+                "<p>You: " + message + "</p>";
+
+            messageInput.value = "";
+        }
+    };
+
+</script>
+
 
 </body>
 </html>
