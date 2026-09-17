@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>VoiceLink Client</title>
+</head>
+
+<body>
+
+    <h1>VoiceLink</h1>
+
+    <input id="message" type="text" placeholder="Type message">
+
+    <button id="send">Send</button>
+
+    <div id="messages"></div>
+
+    <script>
+
+        const socket = new WebSocket("ws://127.0.0.1:8000/ws");
+
+        const messageInput = document.getElementById("message");
+        const sendButton = document.getElementById("send");
+        const messages = document.getElementById("messages");
+
+
+        socket.onopen = () => {
+            console.log("Connected to server");
+        };
+
+
+        socket.onmessage = (event) => {
+
+            const message = document.createElement("p");
+
+            message.textContent = "Received: " + event.data;
+
+            messages.appendChild(message);
+        };
+
+
+        sendButton.onclick = () => {
+
+            const message = messageInput.value;
+
+            if (message.trim() !== "") {
+
+                socket.send(message);
+
+                messageInput.value = "";
+            }
+        };
+
+    </script>
+
+</body>
+</html>
