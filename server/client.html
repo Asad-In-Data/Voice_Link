@@ -6,7 +6,7 @@
 
 <body>
 
-<h1>VoiceLink</h1>
+<h1>VoiceLink</h1>    
 
 <input id="clientId" type="text" placeholder="Your ID">
 
@@ -14,7 +14,9 @@
 
 <hr>
 
-<input id="message" type="text" placeholder="Type message">
+<input id="recipient" type="text" placeholder="Send to">
+
+<input id="message" type="text" placeholder="Message">
 
 <button id="send">Send</button>
 
@@ -74,23 +76,45 @@
 
     sendButton.onclick = () => {
 
-        if (!socket) {
-            alert("Connect first");
-            return;
-        }
+    if (!socket) {
+        alert("Connect first");
+        return;
+    }
 
-        const message = messageInput.value.trim();
+    const recipient = document
+        .getElementById("recipient")
+        .value
+        .trim();
 
-        if (message !== "") {
+    const message = messageInput.value.trim();
 
-            socket.send(message);
+    const sender = clientIdInput.value.trim();
 
-            messages.innerHTML +=
-                "<p>You: " + message + "</p>";
 
-            messageInput.value = "";
-        }
+    if (recipient === "" || message === "") {
+        alert("Enter recipient and message");
+        return;
+    }
+
+
+    const data = {
+        from: sender,
+        to: recipient,
+        type: "message",
+        data: message
     };
+
+
+    socket.send(JSON.stringify(data));
+
+
+    messages.innerHTML +=
+        "<p>You → " + recipient + ": " + message + "</p>";
+
+
+    document.getElementById("recipient").value = "";
+    messageInput.value = "";
+};
 
 </script>
 

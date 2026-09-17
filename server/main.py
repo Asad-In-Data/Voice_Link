@@ -14,24 +14,37 @@ def home():
     return FileResponse("server\client.html")
 
 @app.websocket("/ws/{client_id}")
-async def websocket_endpoint(websocket: WebSocket,client_id:str):
+async def websocket_endpoint(websocket: WebSocket, client_id: str):
+
     await websocket.accept()
+
     clients[client_id] = websocket
-    print(f"Client {client_id} connected")
-    # print(f"Total Clients Connected:{len(clients)}")
+
+    print(f"{client_id} connected")
     print(f"Connected clients: {list(clients.keys())}")
-    
+
     try:
+
         while True:
-         message = await websocket.receive_text()
-         print(f"{client_id}: {message}")
 
-         for other_id, client in clients.items():
+            message = await websocket.receive_json()
 
-                if other_id != client_id:
-                    await client.send_text(
-                        f"{client_id}: {message}"
-                    )  
+            sender = message["from"]
+            receiver = message["to"]
+
+            print(f"{sender} → {receiver}: {message}")
+
+            if receiver in clients:
+
+                await clients[receiver].send_json(message)
+
+            else:
+
+                await websocket.send_json({
+                    "type": "error",
+                    "data": f"{receiver} is not connected"
+                })
+
     except:
 
         if client_id in clients:
