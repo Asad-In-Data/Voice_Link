@@ -6,31 +6,63 @@
 
 <body>
 
-<h1>VoiceLink</h1>    
+<h1>VoiceLink</h1>
 
+<!-- =========================
+     CLIENT CONNECTION SECTION
+     ========================= -->
+
+<!-- Enter your own client ID -->
 <input id="clientId" type="text" placeholder="Your ID">
 
+<!-- Connect this browser to the FastAPI WebSocket server -->
 <button id="connect">Connect</button>
 
 <hr>
 
+<!-- =========================
+     NORMAL MESSAGE SECTION
+     ========================= -->
+
+<!-- Enter the ID of the person/robot you want to send a message to -->
 <input id="recipient" type="text" placeholder="Send to">
 
+<!-- Text message input -->
 <input id="message" type="text" placeholder="Message">
 
+<!-- Send normal text message -->
 <button id="send">Send</button>
 
 <div id="messages"></div>
 
+<hr>
+
+<!-- =========================
+     VOICE SECTION
+     ========================= -->
+
+<!--
+     Clicking this button starts Speech Recognition.
+     The recognized speech will automatically be sent
+     to the recipient as type: "voice".
+-->
 <button id="voiceButton">🎤 Speak</button>
 
+<!-- Shows what Speech Recognition understood -->
 <p id="transcript"></p>
 
 
 <script>
 
+    // =========================================================
+    // 1. WEBSOCKET CONNECTION
+    // =========================================================
+
+    // This variable will contain our WebSocket connection.
     let socket;
 
+
+    // Get HTML elements so JavaScript can interact with them.
     const clientIdInput = document.getElementById("clientId");
     const connectButton = document.getElementById("connect");
 
@@ -39,23 +71,42 @@
 
     const messages = document.getElementById("messages");
 
-    // const voiceButton = document.getElementById("voiceButton");
-    // const transcript = document.getElementById("transcript");
+    const recipientInput = document.getElementById("recipient");
 
+    const voiceButton = document.getElementById("voiceButton");
+    const transcript = document.getElementById("transcript");
+
+
+    // =========================================================
+    // 2. CONNECT TO FASTAPI WEBSOCKET SERVER
+    // =========================================================
 
     connectButton.onclick = () => {
 
+        // Get the client ID entered by the user.
         const clientId = clientIdInput.value.trim();
 
+        // Client ID is required.
         if (clientId === "") {
             alert("Enter your ID");
             return;
         }
 
+        // Create WebSocket connection.
+        //
+        // Example:
+        // ws://127.0.0.1:8000/ws/ASAD
+        //
+        // or:
+        // ws://127.0.0.1:8000/ws/LEO
         socket = new WebSocket(
             "ws://127.0.0.1:8000/ws/" + clientId
         );
 
+
+        // =====================================================
+        // 3. CONNECTION SUCCESS
+        // =====================================================
 
         socket.onopen = () => {
 
@@ -66,18 +117,65 @@
         };
 
 
+        // =====================================================
+        // 4. RECEIVE MESSAGE FROM SERVER
+        // =====================================================
+
         socket.onmessage = (event) => {
 
+            // Show raw message in browser console for debugging.
+            console.log("🔥 EVENT RECEIVED:", event.data);
+
+            // Display received JSON on the webpage.
             messages.innerHTML +=
                 "<p>Received: " + event.data + "</p>";
-                if (message.type === "voice") {
-                   const speech = new SpeechSynthesisUtterance(message.data);
-                   speech.lang = "en-US";
 
-                   window.speechSynthesis.speak(speech);
-                }
+
+            // Convert JSON string into JavaScript object.
+            const message = JSON.parse(event.data);
+
+            console.log("🔥 PARSED MESSAGE:", message);
+
+
+            // =================================================
+            // 5. TEXT-TO-SPEECH
+            // =================================================
+            //
+            // If the received message is a voice message,
+            // Chrome will speak the message using its
+            // built-in Speech Synthesis API.
+            //
+
+            if (message.type === "voice") {
+
+                console.log(
+                    "🔥 VOICE DETECTED:",
+                    message.data
+                );
+
+
+                // Create speech object using received text.
+                const speech =
+                    new SpeechSynthesisUtterance(message.data);
+
+
+                // Set speech language.
+                speech.lang = "en-US";
+
+
+                // Stop any previous speech.
+                window.speechSynthesis.cancel();
+
+
+                // Make Chrome speak the received message.
+                window.speechSynthesis.speak(speech);
+            }
         };
 
+
+        // =====================================================
+        // 6. CONNECTION CLOSED
+        // =====================================================
 
         socket.onclose = () => {
 
@@ -87,136 +185,334 @@
     };
 
 
+    // =========================================================
+    // 7. NORMAL TEXT MESSAGE
+    // =========================================================
+    //
+    // This section is ONLY for messages typed manually.
+    //
+    // Example:
+    //
+    // Type: Hello LEO
+    // Click: Send
+    //
+    // Result:
+    // type = "message"
+    //
+
     sendButton.onclick = () => {
 
-    if (!socket) {
-        alert("Connect first");
-        return;
-    }
-
-    const recipient = document
-        .getElementById("recipient")
-        .value
-        .trim();
-
-    const message = messageInput.value.trim();
-
-    const sender = clientIdInput.value.trim();
-
-
-    if (recipient === "" || message === "") {
-        alert("Enter recipient and message");
-        return;
-    }
-
-
-    const data = {
-        from: sender,
-        to: recipient,
-        type: "message",
-        data: message
-    };
-
-
-    socket.send(JSON.stringify(data));
-
-
-    messages.innerHTML +=
-        "<p>You → " + recipient + ": " + message + "</p>";
-
-
-    document.getElementById("recipient").value = "";
-    messageInput.value = "";
-};
-
-const voiceButton = document.getElementById("voiceButton");
-const transcript = document.getElementById("transcript");
-
-const SpeechRecognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
-
-
-if (SpeechRecognition) {
-
-    const recognition = new SpeechRecognition();
-
-    recognition.lang = "en-US";
-    recognition.continuous = false;
-    recognition.interimResults = false;
-
-    let isListening = false;
-
-
-    voiceButton.onclick = () => {
-
-        if (isListening) {
+        // Make sure WebSocket is connected.
+        if (!socket) {
+            alert("Connect first");
             return;
         }
 
-        isListening = true;
 
-        voiceButton.disabled = true;
-        voiceButton.textContent = "🎤 Listening...";
+        // Get recipient ID.
+        const recipient =
+            recipientInput.value.trim();
 
-        try {
 
-            recognition.start();
+        // Get typed message.
+        const message =
+            messageInput.value.trim();
 
-        } catch (error) {
 
-            console.log("Recognition start error:", error);
+        // Get sender ID.
+        const sender =
+            clientIdInput.value.trim();
 
-            isListening = false;
-            voiceButton.disabled = false;
-            voiceButton.textContent = "🎤 Speak";
+
+        // Recipient and message are required.
+        if (recipient === "" || message === "") {
+            alert("Enter recipient and message");
+            return;
         }
+
+
+        // Create normal text message.
+        const data = {
+
+            from: sender,
+
+            to: recipient,
+
+            // IMPORTANT:
+            // This is a normal typed message.
+            type: "message",
+
+            data: message
+        };
+
+
+        // Send JSON to FastAPI server.
+        socket.send(JSON.stringify(data));
+
+
+        // Show sent message on our own screen.
+        messages.innerHTML +=
+            "<p>You → " +
+            recipient +
+            ": " +
+            message +
+            "</p>";
+
+
+        // Clear input fields after sending.
+        recipientInput.value = "";
+        messageInput.value = "";
     };
 
 
-    recognition.onresult = (event) => {
-    const text = event.results[0][0].transcript;
+    // =========================================================
+    // 8. SPEECH RECOGNITION SETUP
+    // =========================================================
+    //
+    // Chrome provides Speech Recognition through:
+    //
+    // window.SpeechRecognition
+    // OR
+    // window.webkitSpeechRecognition
+    //
 
-    transcript.textContent = "You said: " + text;
-    messageInput.value = text;
+    const SpeechRecognition =
+        window.SpeechRecognition ||
+        window.webkitSpeechRecognition;
 
-    const data = {
-        from: clientIdInput.value,
-        to: recipientInput.value,
-        type: "voice",
-        data: text
-    };
 
-    socket.send(JSON.stringify(data));
+    // Check whether browser supports Speech Recognition.
+    if (SpeechRecognition) {
+
+
+        // Create Speech Recognition object.
+        const recognition =
+            new SpeechRecognition();
+
+
+        // Recognition language.
+        recognition.lang = "en-US";
+
+
+        // Stop after one spoken sentence.
+        recognition.continuous = false;
+
+
+        // Only return final result.
+        recognition.interimResults = false;
+
+
+        // Prevent recognition.start() from being called
+        // multiple times while already listening.
+        let isListening = false;
+
+
+        // =====================================================
+        // 9. SPEAK BUTTON
+        // =====================================================
+
+        voiceButton.onclick = () => {
+
+            // Do nothing if already listening.
+            if (isListening) {
+                return;
+            }
+
+
+            // Make sure WebSocket is connected.
+            if (!socket) {
+                alert("Connect first");
+                return;
+            }
+
+
+            // Make sure recipient exists.
+            if (recipientInput.value.trim() === "") {
+                alert("Enter recipient first");
+                return;
+            }
+
+
+            // Start listening state.
+            isListening = true;
+
+
+            // Update button UI.
+            voiceButton.disabled = true;
+            voiceButton.textContent =
+                "🎤 Listening...";
+
+
+            try {
+
+                // Start browser speech recognition.
+                recognition.start();
+
+            } catch (error) {
+
+                console.log(
+                    "Recognition start error:",
+                    error
+                );
+
+
+                // Reset button if recognition fails.
+                isListening = false;
+
+                voiceButton.disabled = false;
+
+                voiceButton.textContent =
+                    "🎤 Speak";
+            }
+        };
+
+
+
+// =========================================================
+// 10. SPEECH RECOGNITION RESULT
+// =========================================================
+//
+// IMPORTANT:
+// Speech Recognition ek sentence ko multiple results mein
+// divide kar sakti hai.
+//
+// Example:
+// "I"
+// "I am"
+// "I am audible"
+//
+// Isliye hum yahan message SEND nahi karenge.
+// Sirf final recognized text collect karenge.
+//
+
+let finalTranscript = "";
+
+
+recognition.onresult = (event) => {
+
+    // Reset transcript for this speaking session.
+    finalTranscript = "";
+
+
+    // Collect all results returned during this session.
+    for (let i = 0; i < event.results.length; i++) {
+
+        finalTranscript +=
+            event.results[i][0].transcript;
+    }
+
+
+    // Remove unnecessary spaces.
+    finalTranscript =
+        finalTranscript.trim();
+
+
+    // Show what Chrome currently understands.
+    transcript.textContent =
+        "You said: " + finalTranscript;
+
+
+    console.log(
+        "🎤 Current recognition:",
+        finalTranscript
+    );
 };
 
 
-    recognition.onerror = (event) => {
+// =========================================================
+// 11. SPEECH RECOGNITION ERROR
+// =========================================================
 
-        console.log(
-            "Speech recognition error:",
-            event.error
+recognition.onerror = (event) => {
+
+    console.log(
+        "Speech recognition error:",
+        event.error
+    );
+};
+
+
+// =========================================================
+// 12. SPEECH RECOGNITION FINISHED
+// =========================================================
+//
+// IMPORTANT:
+// Message is sent ONLY ONCE when recognition finishes.
+//
+// This prevents:
+//
+// I
+// I am
+// I am audible
+//
+// from being sent as 3 separate voice messages.
+//
+
+recognition.onend = () => {
+
+    console.log(
+        "🎤 Recognition ended:",
+        finalTranscript
+    );
+
+
+    // Make sure we actually received some speech.
+    if (finalTranscript !== "") {
+
+        const sender =
+            clientIdInput.value.trim();
+
+        const recipient =
+            recipientInput.value.trim();
+
+
+        // Create ONE voice message.
+        const data = {
+
+            from: sender,
+
+            to: recipient,
+
+            type: "voice",
+
+            data: finalTranscript
+        };
+
+
+        // Send ONLY ONE message to the server.
+        socket.send(
+            JSON.stringify(data)
         );
-    };
 
 
-    recognition.onend = () => {
+        // Show the final voice message on sender screen.
+        messages.innerHTML +=
+            "<p>🎤 You → " +
+            recipient +
+            ": " +
+            finalTranscript +
+            "</p>";
+    }
 
-        isListening = false;
 
-        voiceButton.disabled = false;
-        voiceButton.textContent = "🎤 Speak";
-    };
+    // Reset transcript for the next voice session.
+    finalTranscript = "";
 
-}
-else {
 
-    voiceButton.disabled = true;
+    // Reset button state.
+    isListening = false;
+
+    voiceButton.disabled = false;
 
     voiceButton.textContent =
-        "Speech recognition not supported";
-}
-</script>
+        "🎤 Speak";
+};
 
+    // End Speech Recognition support block.
+    }
+
+
+</script>
 
 </body>
 </html>
