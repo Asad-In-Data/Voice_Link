@@ -1,57 +1,551 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>VoiceLink Client</title>
+ <meta charset="UTF-8">
+
+    <!-- Mobile responsive support -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>VoiceLink</title>
+
+    <style>
+
+        /* =====================================================
+           VOICELINK V1 - UI STYLING
+           ===================================================== */
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+
+        /* =========================
+           PAGE
+           ========================= */
+
+        body {
+            min-height: 100vh;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            background: #0f1115;
+
+            color: #f1f3f5;
+
+            display: flex;
+            justify-content: center;
+
+            padding: 30px 15px;
+        }
+
+
+        /* =========================
+           MAIN APP
+           ========================= */
+
+        .app {
+            width: 100%;
+            max-width: 760px;
+        }
+
+
+        /* =========================
+           HEADER
+           ========================= */
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            margin-top: 7px;
+
+            color: #8f98a5;
+
+            font-size: 14px;
+        }
+
+
+        /* =========================
+           CARDS
+           ========================= */
+
+        .card {
+            background: #171a21;
+
+            border: 1px solid #292e38;
+
+            border-radius: 18px;
+
+            padding: 20px;
+
+            margin-bottom: 16px;
+
+            box-shadow:
+                0 12px 35px
+                rgba(0, 0, 0, 0.22);
+        }
+
+
+        /* =========================
+           SECTION TITLES
+           ========================= */
+
+        .section-title {
+            color: #9ca3af;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+
+            margin-bottom: 13px;
+        }
+
+
+        /* =========================
+           INPUTS
+           ========================= */
+
+        input {
+            width: 100%;
+
+            background: #0f1115;
+
+            color: #f1f3f5;
+
+            border: 1px solid #343a46;
+
+            border-radius: 10px;
+
+            padding: 13px 14px;
+
+            outline: none;
+
+            font-size: 14px;
+        }
+
+        input:focus {
+            border-color: #ff6b00;
+        }
+
+
+        /* =========================
+           ROW
+           ========================= */
+
+        .row {
+            display: flex;
+
+            gap: 10px;
+        }
+
+
+        /* =========================
+           ALL BUTTONS
+           ========================= */
+
+        button {
+            border: none;
+
+            border-radius: 10px;
+
+            padding: 12px 18px;
+
+            cursor: pointer;
+
+            font-size: 14px;
+
+            font-weight: 700;
+
+            transition: 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+        }
+
+
+        /* =========================
+           CONNECT BUTTON
+           ========================= */
+
+        #connect {
+            min-width: 105px;
+
+            background: #2741d6;
+
+            color: white;
+        }
+
+
+        /* =========================
+           SEND BUTTON
+           ========================= */
+
+        #send {
+            width: 100%;
+
+            margin-top: 10px;
+
+            background: #2c333d;
+
+            color: white;
+        }
+
+
+        /* =========================
+           VOICE BUTTON
+           ========================= */
+
+        #voiceButton {
+            width: 100%;
+
+            min-height: 72px;
+
+            background: #132fd1;
+
+            color: white;
+
+            border-radius: 14px;
+
+            font-size: 19px;
+        }
+
+        #voiceButton:hover {
+            opacity: 0.92;
+        }
+
+        #voiceButton:disabled {
+            opacity: 0.55;
+
+            cursor: not-allowed;
+
+            transform: none;
+        }
+
+
+        /* =========================
+           CONNECTION STATUS
+           ========================= */
+
+        .status {
+            margin-top: 12px;
+
+            color: #8f98a5;
+
+            font-size: 13px;
+        }
+
+        .dot {
+            display: inline-block;
+
+            width: 8px;
+            height: 8px;
+
+            border-radius: 50%;
+
+            background: #777;
+
+            margin-right: 6px;
+        }
+
+
+        /* =========================
+           VOICE TRANSCRIPT
+           ========================= */
+
+        #transcript {
+            min-height: 22px;
+
+            margin-top: 14px;
+
+            color: #c7cbd1;
+
+            font-size: 14px;
+
+            line-height: 1.5;
+
+            text-align: center;
+        }
+
+
+        /* =========================
+           MESSAGE / CHAT AREA
+           ========================= */
+
+        #messages {
+            min-height: 150px;
+
+            max-height: 360px;
+
+            overflow-y: auto;
+
+            background: #0f1115;
+
+            border: 1px solid #292e38;
+
+            border-radius: 12px;
+
+            padding: 14px;
+        }
+
+        #messages p {
+            background: #20252e;
+
+            color: #dfe3e8;
+
+            border-radius: 10px;
+
+            padding: 10px 12px;
+
+            margin-bottom: 8px;
+
+            font-size: 14px;
+
+            line-height: 1.45;
+
+            word-break: break-word;
+        }
+
+        #messages p:last-child {
+            margin-bottom: 0;
+        }
+
+
+        /* =========================
+           FOOTER
+           ========================= */
+
+        .footer {
+            text-align: center;
+
+            color: #626a76;
+
+            font-size: 12px;
+
+            margin-top: 18px;
+        }
+
+
+        /* =========================
+           MOBILE RESPONSIVE
+           ========================= */
+
+        @media (max-width: 600px) {
+
+            body {
+                padding: 18px 10px;
+            }
+
+            .card {
+                padding: 16px;
+
+                border-radius: 14px;
+            }
+
+            .row {
+                flex-direction: column;
+            }
+
+            #connect {
+                width: 100%;
+            }
+
+            .logo {
+                font-size: 28px;
+            }
+        }
+
+    </style>
 </head>
 
 <body>
 
-<h1>VoiceLink</h1>
-
-<!-- =========================
-     CLIENT CONNECTION SECTION
-     ========================= -->
-
-<!-- Enter your own client ID -->
-<input id="clientId" type="text" placeholder="Your ID">
-
-<!-- Connect this browser to the FastAPI WebSocket server -->
-<button id="connect">Connect</button>
-
-<hr>
-
-<!-- =========================
-     NORMAL MESSAGE SECTION
-     ========================= -->
-
-<!-- Enter the ID of the person/robot you want to send a message to -->
-<input id="recipient" type="text" placeholder="Send to">
-
-<!-- Text message input -->
-<input id="message" type="text" placeholder="Message">
-
-<!-- Send normal text message -->
-<button id="send">Send</button>
-
-<div id="messages"></div>
-
-<hr>
-
-<!-- =========================
-     VOICE SECTION
-     ========================= -->
-
-<!--
-     Clicking this button starts Speech Recognition.
-     The recognized speech will automatically be sent
-     to the recipient as type: "voice".
--->
-<button id="voiceButton">🎤 Speak</button>
-
-<!-- Shows what Speech Recognition understood -->
-<p id="transcript"></p>
+    <main class="app">
 
 
+        <!-- =================================================
+             HEADER
+             ================================================= -->
+
+        <header class="header">
+
+            <div class="logo">
+                VoiceLink
+            </div>
+
+            <div class="subtitle">
+                Voice communication between operator and LEO
+            </div>
+
+        </header>
+
+
+
+        <!-- =================================================
+             CONNECTION CARD
+             ================================================= -->
+
+        <section class="card">
+
+            <div class="section-title">
+                Connection
+            </div>
+
+
+            <div class="row">
+
+                <!-- Your client ID -->
+
+                <input
+                    id="clientId"
+                    type="text"
+                    placeholder="Your ID e.g. ASAD"
+                >
+
+
+                <!-- Existing JavaScript uses this ID -->
+
+                <button id="connect">
+                    Connect
+                </button>
+
+            </div>
+
+
+            <!-- Simple visual status -->
+
+            <div class="status">
+
+                <span class="dot"></span>
+
+                WebSocket Server
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             TEXT COMMUNICATION CARD
+             ================================================= -->
+
+        <section class="card">
+
+            <div class="section-title">
+                Communication
+            </div>
+
+
+            <!-- Recipient -->
+
+            <input
+                id="recipient"
+                type="text"
+                placeholder="Send to e.g. LEO"
+            >
+
+
+            <div style="height: 10px;"></div>
+
+
+            <!-- Normal text message -->
+
+            <input
+                id="message"
+                type="text"
+                placeholder="Type a message..."
+            >
+
+
+            <!-- Existing JavaScript uses this button -->
+
+            <button id="send">
+                Send Text Message
+            </button>
+
+        </section>
+
+
+
+        <!-- =================================================
+             VOICE COMMUNICATION CARD
+             ================================================= -->
+
+        <section class="card">
+
+            <div class="section-title">
+                Voice Communication
+            </div>
+
+
+            <!-- Existing Speech Recognition button -->
+
+            <button id="voiceButton">
+                 Speak
+            </button>
+
+
+            <!-- Speech Recognition transcript -->
+
+            <p id="transcript">
+                Press Speak and talk to LEO.
+            </p>
+
+        </section>
+
+
+
+        <!-- =================================================
+             CONVERSATION CARD
+             ================================================= -->
+
+        <section class="card">
+
+            <div class="section-title">
+                Conversation
+            </div>
+
+
+            <!-- Existing JavaScript writes messages here -->
+
+            <div id="messages"></div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             FOOTER
+             ================================================= -->
+
+        <div class="footer">
+
+            VoiceLink V1
+            •
+            FastAPI + WebSocket + Browser Speech APIs
+
+        </div>
+
+
+    </main>
 <script>
 
     // =========================================================
