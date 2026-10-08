@@ -615,56 +615,138 @@
         // 4. RECEIVE MESSAGE FROM SERVER
         // =====================================================
 
-        socket.onmessage = (event) => {
+        // =========================================================
+// 4. RECEIVE MESSAGE FROM SERVER
+// =========================================================
+//
+// Server JSON bhejta hai.
+//
+// Example:
+//
+// {
+//     "from": "ASAD",
+//     "to": "LEO",
+//     "type": "voice",
+//     "data": "Hello LEO"
+// }
+//
+// JSON sirf communication protocol hai.
+// UI mein hum sirf actual message/data show karenge.
+// =========================================================
 
-            // Show raw message in browser console for debugging.
-            console.log("🔥 EVENT RECEIVED:", event.data);
+socket.onmessage = (event) => {
 
-            // Display received JSON on the webpage.
-            messages.innerHTML +=
-                "<p>Received: " + event.data + "</p>";
-
-
-            // Convert JSON string into JavaScript object.
-            const message = JSON.parse(event.data);
-
-            console.log("🔥 PARSED MESSAGE:", message);
-
-
-            // =================================================
-            // 5. TEXT-TO-SPEECH
-            // =================================================
-            //
-            // If the received message is a voice message,
-            // Chrome will speak the message using its
-            // built-in Speech Synthesis API.
-            //
-
-            if (message.type === "voice") {
-
-                console.log(
-                    "🔥 VOICE DETECTED:",
-                    message.data
-                );
+    // Debug ke liye raw JSON console mein rahega.
+    console.log("🔥 EVENT RECEIVED:", event.data);
 
 
-                // Create speech object using received text.
-                const speech =
-                    new SpeechSynthesisUtterance(message.data);
+    // JSON ko JavaScript object mein convert karo.
+    const message = JSON.parse(event.data);
+
+    console.log("🔥 PARSED MESSAGE:", message);
 
 
-                // Set speech language.
-                speech.lang = "en-US";
+    // =====================================================
+    // MESSAGE DATA
+    // =====================================================
+
+    const sender = message.from;
+    const messageText = message.data;
 
 
-                // Stop any previous speech.
-                window.speechSynthesis.cancel();
+    // =====================================================
+    // VOICE MESSAGE
+    // =====================================================
+
+    if (message.type === "voice") {
+
+        console.log(
+            "🔥 VOICE DETECTED:",
+            messageText
+        );
 
 
-                // Make Chrome speak the received message.
-                window.speechSynthesis.speak(speech);
-            }
-        };
+        // -------------------------------------------------
+        // Conversation mein normal message ki tarah show karo
+        // -------------------------------------------------
+
+        messages.innerHTML +=
+            "<p>🎤 " +
+            sender +
+            ": " +
+            messageText +
+            "</p>";
+
+
+        // -------------------------------------------------
+        // Scroll conversation to bottom
+        // -------------------------------------------------
+
+        messages.scrollTop =
+            messages.scrollHeight;
+
+
+        // -------------------------------------------------
+        // Text → Speech
+        // -------------------------------------------------
+
+        const speech =
+            new SpeechSynthesisUtterance(messageText);
+
+
+        speech.lang = "en-US";
+
+
+        // Agar previous speech chal rahi ho
+        // to usay stop karo.
+
+        window.speechSynthesis.cancel();
+
+
+        // Received voice message ko speak karo.
+
+        window.speechSynthesis.speak(speech);
+
+    }
+
+
+    // =====================================================
+    // NORMAL TEXT MESSAGE
+    // =====================================================
+
+    else if (message.type === "message") {
+
+        // Conversation mein sirf readable message show karo.
+
+        messages.innerHTML +=
+            "<p>💬 " +
+            sender +
+            ": " +
+            messageText +
+            "</p>";
+
+
+        // Automatically latest message tak scroll.
+
+        messages.scrollTop =
+            messages.scrollHeight;
+    }
+
+
+    // =====================================================
+    // UNKNOWN MESSAGE TYPE
+    // =====================================================
+
+    else {
+
+        console.log(
+            "Unknown message type:",
+            message.type
+        );
+
+    }
+
+};
 
 
         // =====================================================
