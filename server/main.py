@@ -5,13 +5,18 @@
 
 from fastapi import FastAPI, WebSocket
 from fastapi.responses import FileResponse
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
+CLIENT_FILE = BASE_DIR / "client.html"
+
 
 clients = {}
 app = FastAPI()
 
 @app.get("/")
 def home():
-    return FileResponse("server\client.html")
+    return FileResponse(CLIENT_FILE)
 
 @app.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: str):
