@@ -141,7 +141,7 @@
         }
 
         input:focus {
-            border-color: #ff6b00;
+            border-color: #0d1775;
         }
 
 
@@ -593,9 +593,15 @@
         //
         // or:
         // ws://127.0.0.1:8000/ws/LEO
-        socket = new WebSocket(
-            "ws://127.0.0.1:8000/ws/" + clientId
-        );
+        // socket = new WebSocket(
+        //     "ws://127.0.0.1:8000/ws/" + clientId
+        // );
+        const protocol =
+    window.location.protocol === "https:" ? "wss:" : "ws:";
+
+const socket = new WebSocket(
+    `${protocol}//${window.location.host}/ws/${encodeURIComponent(clientId)}`
+);
 
 
         // =====================================================
